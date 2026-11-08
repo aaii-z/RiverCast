@@ -1,0 +1,127 @@
+name: norwich
+bbox: [52.50, 1.05, 52.72, 1.45]  # south, west, north, east
+
+paths:
+  raw: data/raw/norwich
+  processed: data/processed/norwich
+
+period:
+  start: 2022-01-01
+  end: 2025-01-01
+  spinup_days: 7
+
+split:
+  val_start: 2024-01-01
+  test_start: 2024-07-01
+
+network:
+  spacing_km: 2.5
+  max_snap_m: 500
+  rivers:  # parents first; start/end are [lon, lat], drawn upstream -> downstream
+    - {name: River Yare, start: [1.150, 52.628], end: [1.400, 52.616]}
+    - {name: River Wensum, start: [1.170, 52.684], end: [1.3233, 52.6215], joins: River Yare}
+    - {name: River Tud, start: [1.120, 52.662], end: [1.2485, 52.6460], joins: River Wensum}
+    - {name: River Tas, start: [1.255, 52.533], end: [1.3070, 52.6091], joins: River Yare}
+
+# Environment Agency Hydrology API, 15-minute qualified measures
+flow_gauges:
+  - {river: River Yare, station: Colney, lon: 1.2231, lat: 52.6279,
+     measure: efc7f52a-ca89-4d56-bea1-7758811ee22d-flow-i-900-m3s-qualified}
+  - {river: River Wensum, station: Costessey Mill, lon: 1.2180, lat: 52.6686,
+     measure: 907380f9-b0e8-4401-a5c9-669a66a192bc_034004-flow-i-900-m3s-qualified}
+  - {river: River Tud, station: Costessey Park, lon: 1.2064, lat: 52.6558,
+     measure: 4736e10e-0707-4e0d-89f2-a485a017a231-flow-i-900-m3s-qualified}
+  - {river: River Tas, station: Shotesham, lon: 1.2814, lat: 52.5468,
+     measure: b697f85e-18a0-4758-b4c5-d49dd976890f-flow-i-900-m3s-qualified}
+
+rain_gauges:
+  - {station: Hethersett, lon: 1.1693, lat: 52.6020,
+     measure: 23e61815-8dbd-4cf3-bcfd-b7f6cf555f08-rainfall-t-900-mm-qualified}
+  - {station: Poringland, lon: 1.3670, lat: 52.5584,
+     measure: 141e8eb2-f567-4faf-9ba5-ba839a38b8ed-rainfall-t-900-mm-qualified}
+  - {station: Salle, lon: 1.1513, lat: 52.7744,
+     measure: 95faef82-71d3-419c-a09f-b1e300a6c209-rainfall-t-900-mm-qualified}
+  - {station: Forncett End, lon: 1.1565, lat: 52.4924,
+     measure: 82a8f957-7879-4f31-9c3f-dc7499ad5d34-rainfall-t-900-mm-qualified}
+
+weather:
+  lon: 1.29
+  lat: 52.63
+  water_temp_tau_h: 72  # water temperature lags air temperature
+
+catchment:
+  urban_radius_m: 1000
+  wwtw_max_dist_m: 1500
+  wwtw_default_m3s: 0.02
+  wwtw_m3s:  # matched against OSM plant names
+    Whitlingham: 0.9
+
+hydraulics:  # v = a * Q^b, clipped
+  a: 0.25
+  b: 0.35
+  v_min: 0.05
+  v_max: 1.5
+  substeps: 4
+
+sources:
+  cso_m3s_full_urban: 1.0
+  cso_urban_threshold: 0.2
+  wwtw_storm_ratio: 0.5
+  spill_rain_6h_mm: 5.0
+  spill_scale_mm: 5.0
+  runoff_coeff: 0.1
+  runoff_width_m: 1000
+  boundary_gamma: 0.5  # upstream inflow concentration ~ (Q / Q_median)^gamma
+
+# Illustrative literature-scale values; t90_sun_h is the sunlight-only T90 at 500 W/m2
+# (cf. Kevill et al. 2025). Concentrations are in each pathogen's unit.
+pathogens:
+  fio:
+    unit: CFU/100mL
+    unit_per_m3: 1.0e4
+    t90_dark_h: 48
+    t90_sun_h: 6
+    theta: 1.07
+    background: 100
+    effluent: 5.0e3
+    sewage: 1.0e6
+    runoff: 2.0e4
+    resuspension: 5.0e4
+    lod: 1
+    noise_log10: 0.2
+    sample_every_h: 1
+  norovirus:
+    unit: gc/L
+    unit_per_m3: 1.0e3
+    t90_dark_h: 720
+    t90_sun_h: 150
+    theta: 1.04
+    background: 10
+    effluent: 1.0e4
+    sewage: 1.0e6
+    runoff: 0
+    resuspension: 0
+    lod: 100
+    noise_log10: 0.3
+    sample_every_h: 24
+    seasonal_amp: 0.8
+    seasonal_peak_doy: 15
+  amr:
+    unit: gc/mL
+    unit_per_m3: 1.0e6
+    t90_dark_h: 240
+    t90_sun_h: 120
+    theta: 1.03
+    background: 100
+    effluent: 1.0e5
+    sewage: 1.0e6
+    runoff: 1.0e4
+    resuspension: 1.0e3
+    lod: 10
+    noise_log10: 0.2
+    sample_every_h: 24
+
+observation:
+  monitored_fraction: 0.7
+  dropout: 0.05
+  seed: 7
