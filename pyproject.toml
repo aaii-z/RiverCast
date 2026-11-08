@@ -14,10 +14,21 @@ dependencies = [
     "pyyaml>=6.0",
     "requests>=2.31",
     "shapely>=2.0",
+    "tabulate>=0.9",
+    "torch>=2.5",
+    "xgboost-cpu>=2.1",
 ]
 
 [dependency-groups]
 dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [build-system]
 requires = ["hatchling"]

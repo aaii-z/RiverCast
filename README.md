@@ -76,13 +76,39 @@ src/rivercast/
   observe.py               noisy, sparse measurements
   dataset.py               Dataset container (save/load/splits)
   pipeline.py              end-to-end build
+  forecast_data.py         windows, scaling and targets for forecasting
+  models/                  persistence, XGBoost, LSTM, Graph WaveNet
+  training.py              masked quantile loss and training loop
+  evaluate.py              log10 error and interval coverage
   plots.py
 scripts/                   CLI entry points
 tests/
 ```
 
-See [PLAN.md](PLAN.md) for Phases 2–3 (baselines, multi-task Graph WaveNet with quantile
-outputs, and experiments).
+## Forecasting (Phase 2)
+
+Each model sees the last 24 h at every node and forecasts all three targets 1, 3, 6 and 12 h
+ahead as 10/50/90% quantiles. It trains on noisy, sparse observations (masked pinball loss) and
+is scored on the true simulated concentration for July–December 2024.
+
+| MAE (log10) | Persistence | XGBoost | LSTM | Graph WaveNet |
+|---|---|---|---|---|
+| All nodes | 0.541 | 0.783 | 0.377 | **0.332** |
+| Nodes with a sensor | 0.444 | 0.341 | 0.328 | **0.326** |
+| Nodes without a sensor | 0.778 | 1.864 | 0.499 | **0.346** |
+| 80% interval coverage | – | 0.54 | 0.64 | 0.67 |
+
+The river graph adds little where a sensor already exists, but cuts error by about a third
+where none does. The intervals are too narrow, and calibrating them is next. See
+`results/metrics.md` for each target and horizon.
+
+```bash
+uv run python scripts/train.py            # all models (~1 h on CPU); add --fast for a smoke test
+uv run python scripts/evaluate.py         # writes results/metrics.{csv,md}
+```
+
+See [PLAN.md](PLAN.md) for Phase 3 (experiments and demo) and `docs/explainer.html` for a
+plain-language walkthrough.
 
 Data: © OpenStreetMap contributors (ODbL); Environment Agency data under the Open Government
 Licence v3.0; Open-Meteo (CC BY 4.0).

@@ -23,19 +23,21 @@ Build the river graph and generate the training data.
 
 **Done:** `figures/event.png` shows Storm Babet (Oct 2023) producing a pollution wave travelling down the Wensum into the Yare.
 
-## Phase 2 — Models
+## Phase 2 — Models ✅
 
 Train baselines and the graph model on the same data.
 
-- [ ] Persistence baseline (next = current)
-- [ ] XGBoost per node (non-graph, the model family used in the UK Open E. coli models)
-- [ ] LSTM per node (temporal only, no graph)
-- [ ] Graph WaveNet (via `tsl`) with:
+- [x] Persistence baseline (last observed value)
+- [x] XGBoost (non-graph, local features; multi-quantile, one model per target × horizon)
+- [x] LSTM per node (temporal only, no graph)
+- [x] Graph WaveNet (own implementation of Wu et al. 2019; `tsl` does not install cleanly on Python 3.13):
+  - downstream / upstream / adaptive adjacency, diffusion order 2
   - multi-task heads (FIO / norovirus / AMR)
-  - quantile outputs (e.g. 10/50/90%) for uncertainty
-- [ ] Forecast horizons: 1, 3, 6, 12 h
+  - quantile outputs (10/50/90%)
+- [x] 24 h input window; horizons 1, 3, 6, 12 h; masked pinball loss on observed values only
+- [x] Shared evaluation against true concentration at all nodes, split by monitored / unmonitored
 
-**Done when:** all models train and produce test-set forecasts in one shared evaluation script.
+**Done:** `results/metrics.md`. Graph WaveNet is best overall (MAE 0.332 log10). It matches the LSTM at monitored nodes and cuts error by 31% at unmonitored nodes (0.346 vs 0.499). 80% intervals under-cover (54–67%).
 
 ## Phase 3 — Experiments & Demo
 
