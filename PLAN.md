@@ -41,13 +41,13 @@ Train baselines and the graph model on the same data.
 
 ## Phase 3 — Experiments & Demo
 
-Answer the research questions and package the results.
+Answer the research questions and package the results (`scripts/experiments.py` → `results/phase3.md`).
 
-- [ ] Exp 1: Graph vs non-graph (GNN vs XGBoost / LSTM)
-- [ ] Exp 2: Multi-task vs separate single-target models
-- [ ] Exp 3: Performance during rain-driven spikes (event-based metrics, not only average error)
-- [ ] Uncertainty check: quantile coverage (does the 80% interval contain ~80% of the truth?)
-- [ ] Outputs: results table, forecast plots with uncertainty bands, Norwich map of forecasts
-- [ ] README: problem, method, results, limitations (synthetic pollution data, not validated on real samples)
+- [x] Exp 1: Graph vs non-graph. The graph matches the LSTM at monitored nodes and cuts error by 31% at unmonitored ones (`figures/node_groups.png`)
+- [ ] Exp 2: Multi-task vs single-task Graph WaveNet (3 single-pathogen runs training)
+- [x] Exp 3: High-pollution hours (top 5% per node): every model's error doubles; Graph WaveNet still best (0.69 vs LSTM 0.76)
+- [x] FIO > 1000 CFU/100 mL alerts 6 h ahead: Graph WaveNet F1 0.72 (precision 0.86, recall 0.62)
+- [x] Uncertainty: conformal calibration on validation observations. Bands already cover ~80% of observations and ~86% of truth for FIO/AMR. Norovirus is biased high by below-detection-limit samples (needs a censored loss)
+- [x] Outputs: `figures/mae_by_horizon.png`, `node_groups.png`, `forecast_event.png`, `forecast_map.png`; interactive storm map in `docs/explainer.html`
 
-**Future work (mentioned, not built):** TFT, sensor-removal experiment, real-data validation (Anglian Water / EA sampling), tidal/estuarine areas (Bangor), health-outcome linkage.
+**Future work (mentioned, not built):** rainfall forecasts as known future inputs (TFT-style), censored loss for below-detection-limit samples, TFT, sensor-removal experiment, real-data validation (Anglian Water / EA sampling), tidal/estuarine areas (Bangor), health-outcome linkage.

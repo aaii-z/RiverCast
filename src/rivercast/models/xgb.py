@@ -82,3 +82,10 @@ class XGBForecaster:
         for (k, j), model in self.models.items():
             model.save_model(path / f"xgb_t{k}_h{j}.json")
         (path / "xgb_params.json").write_text(json.dumps(self.params, indent=2))
+
+    def load(self, path) -> None:
+        for file in path.glob("xgb_t*_h*.json"):
+            k, j = (int(part[1:]) for part in file.stem.split("_")[1:])
+            booster = xgb.Booster()
+            booster.load_model(file)
+            self.models[(k, j)] = booster

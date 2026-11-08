@@ -24,8 +24,9 @@ def quantile_loss(pred: torch.Tensor, target: torch.Tensor,
 
 class TorchForecaster:
     def __init__(self, module: nn.Module, quantiles: list[float], train_cfg: dict,
-                 max_batches: int | None = None):
+                 max_batches: int | None = None, targets: list[int] | None = None):
         self.module = module
+        self.targets = targets  # train on a subset of targets (single-task runs)
         self.quantiles = tuple(quantiles)
         self.q = torch.tensor(quantiles, dtype=torch.float32)
         self.cfg = train_cfg
@@ -34,6 +35,8 @@ class TorchForecaster:
     def _loss(self, data: ForecastData, t: np.ndarray) -> torch.Tensor:
         x = torch.from_numpy(data.windows(t))
         y = torch.from_numpy(data.targets(t))
+        if self.targets is not None:
+            y = y[..., self.targets]
         return quantile_loss(self.module(x), y, self.q)
 
     @torch.no_grad()
@@ -92,3 +95,6 @@ class TorchForecaster:
 
     def save(self, path) -> None:
         torch.save(self.module.state_dict(), path / "model.pt")
+
+    def load(self, path) -> None:
+        self.module.load_state_dict(torch.load(path / "model.pt", weights_only=True))

@@ -86,6 +86,11 @@ class ForecastData:
         source = self.truth_log10 if truth else self.observed
         return source[t[:, None] + self.horizons].transpose(0, 2, 1, 3).astype(np.float32)
 
-    def to_log10(self, z: np.ndarray) -> np.ndarray:
+    def observed_log10(self, t: np.ndarray) -> np.ndarray:
+        """Noisy, sparse observations [B, N, H, P] in log10 units (NaN where unobserved)."""
+        return self.targets(t) * self.target_std + self.target_mean
+
+    def to_log10(self, z: np.ndarray, targets: list[int] | None = None) -> np.ndarray:
         """Undo target scaling for predictions shaped [..., P, Q]."""
-        return z * self.target_std[:, None] + self.target_mean[:, None]
+        k = slice(None) if targets is None else targets
+        return z * self.target_std[k, None] + self.target_mean[k, None]

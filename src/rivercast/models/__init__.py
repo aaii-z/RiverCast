@@ -8,9 +8,12 @@ from rivercast.training import TorchForecaster
 MODELS = ("persistence", "xgboost", "lstm", "graph_wavenet")
 
 
-def build_forecaster(name: str, data: ForecastData, cfg: dict, fast: bool = False):
+def build_forecaster(name: str, data: ForecastData, cfg: dict, fast: bool = False,
+                     targets: list[int] | None = None):
+    """`targets` restricts a neural model to a subset of pathogens (single-task runs)."""
     quantiles = cfg["quantiles"]
-    out_shape = (len(data.horizons), data.n_targets, len(quantiles))
+    n_targets = data.n_targets if targets is None else len(targets)
+    out_shape = (len(data.horizons), n_targets, len(quantiles))
     train_cfg = {**cfg["train"], **({"epochs": cfg["fast"]["epochs"]} if fast else {})}
     max_batches = cfg["fast"]["max_batches"] if fast else None
 
@@ -30,4 +33,4 @@ def build_forecaster(name: str, data: ForecastData, cfg: dict, fast: bool = Fals
                               **cfg["graph_wavenet"])
     else:
         raise ValueError(f"Unknown model {name!r}; choose from {MODELS}")
-    return TorchForecaster(module, quantiles, train_cfg, max_batches)
+    return TorchForecaster(module, quantiles, train_cfg, max_batches, targets)
