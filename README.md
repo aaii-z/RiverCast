@@ -96,7 +96,7 @@ uv run pytest
 ## Limitations and next steps
 
 The pollution data is simulated, so the results show the method works, not that it is accurate
-on real rivers. Next steps: real hydrodynamic outputs and sampling data, a loss that handles
+on real rivers. Next steps: real hydrodynamic model outputs, a loss that handles
 values below the detection limit, and rainfall forecasts as inputs. See [PLAN.md](PLAN.md).
 
 Data: OpenStreetMap contributors (ODbL), Environment Agency (Open Government Licence v3.0),
