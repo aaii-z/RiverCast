@@ -44,7 +44,7 @@ Train baselines and the graph model on the same data.
 Answer the research questions and package the results (`scripts/experiments.py` → `results/phase3.md`).
 
 - [x] Exp 1: Graph vs non-graph. The graph matches the LSTM at monitored nodes and cuts error by 31% at unmonitored ones (`figures/node_groups.png`)
-- [ ] Exp 2: Multi-task vs single-task Graph WaveNet (3 single-pathogen runs training)
+- [x] Exp 2: Multi-task vs single-task Graph WaveNet: a tie overall (0.332 vs 0.334). Sharing helps sparse norovirus (0.572 vs 0.592), costs a little on data-rich FIO (0.258 vs 0.244); one model instead of three
 - [x] Exp 3: High-pollution hours (top 5% per node): every model's error doubles; Graph WaveNet still best (0.69 vs LSTM 0.76)
 - [x] FIO > 1000 CFU/100 mL alerts 6 h ahead: Graph WaveNet F1 0.72 (precision 0.86, recall 0.62)
 - [x] Uncertainty: conformal calibration on validation observations. Bands already cover ~80% of observations and ~86% of truth for FIO/AMR. Norovirus is biased high by below-detection-limit samples (needs a censored loss)

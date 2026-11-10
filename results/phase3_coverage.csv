@@ -35,3 +35,15 @@ coverage,width,target,model,stage,reference
 0.8057988104586173,0.97267693,fio,graph_wavenet,calibrated,observations
 0.8634509081337194,0.30142656,norovirus,graph_wavenet,calibrated,observations
 0.8011230086184382,0.70591486,amr,graph_wavenet,calibrated,observations
+0.9065255925698046,0.9997357,fio,graph_wavenet_single,raw,truth
+0.3005149277782661,0.387928,norovirus,graph_wavenet_single,raw,truth
+0.8994206146904573,0.67573583,amr,graph_wavenet_single,raw,truth
+0.8093744990367921,0.96345484,fio,graph_wavenet_single,raw,observations
+0.9155040800210582,0.34747636,norovirus,graph_wavenet_single,raw,observations
+0.7938756855575868,0.68767136,amr,graph_wavenet_single,raw,observations
+0.9091569980369751,1.0118124,fio,graph_wavenet_single,calibrated,truth
+0.29906280214467784,0.37191382,norovirus,graph_wavenet_single,calibrated,truth
+0.9095122469309426,0.7015689,amr,graph_wavenet_single,calibrated,truth
+0.8156781445545469,0.9755597,fio,graph_wavenet_single,calibrated,observations
+0.8424585417215057,0.33147603,norovirus,graph_wavenet_single,calibrated,observations
+0.8116348916166101,0.71352404,amr,graph_wavenet_single,calibrated,observations

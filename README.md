@@ -107,8 +107,22 @@ uv run python scripts/train.py            # all models (~1 h on CPU); add --fast
 uv run python scripts/evaluate.py         # writes results/metrics.{csv,md}
 ```
 
-See [PLAN.md](PLAN.md) for Phase 3 (experiments and demo) and `docs/explainer.html` for a
-plain-language walkthrough.
+## Experiments (Phase 3)
+
+`uv run python scripts/experiments.py` writes `results/phase3.md` and the figures below.
+
+- **Graph vs no graph:** at nodes without a sensor, Graph WaveNet's error is 31% lower than the LSTM's.
+- **Multi-task vs single-task:** a tie overall (0.332 vs 0.334). Sharing helps norovirus, the
+  sparsest target (0.572 vs 0.592), and costs a little on hourly FIO (0.258 vs 0.244).
+- **Storms:** error roughly doubles in the top 5% of hours; Graph WaveNet is still best (0.69).
+- **Alerts:** FIO > 1000 CFU/100 mL, 6 h ahead: precision 0.86, recall 0.62, F1 0.72.
+- **Uncertainty:** 80% bands cover ~86% of truth for FIO/AMR; conformal calibration barely moves
+  them. Norovirus is biased high because 74% of samples are below the detection limit.
+
+![Error by node group](figures/node_groups.png)
+![Storm forecast](figures/forecast_event.png)
+
+See [PLAN.md](PLAN.md) for the plan and future work.
 
 Data: © OpenStreetMap contributors (ODbL); Environment Agency data under the Open Government
 Licence v3.0; Open-Meteo (CC BY 4.0).
