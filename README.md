@@ -5,7 +5,7 @@ It treats the river network as a graph, so a model can learn how pollution trave
 from one place to the next.
 
 - **Demo presentation:** _coming soon_ <!-- TODO: add demo video / slides link -->
-- **Live map:** _coming soon_ <!-- TODO: add Vercel URL -->
+- **Live map:** [rivercast-green.vercel.app](https://rivercast-green.vercel.app/)
 
 ![Truth vs Graph WaveNet forecast during a July 2024 storm](figures/forecast_map.png)
 
