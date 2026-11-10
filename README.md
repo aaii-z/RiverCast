@@ -4,7 +4,7 @@ RiverCast is a small prototype that forecasts river pollution across Norwich a f
 It treats the river network as a graph, so a model can learn how pollution travels downstream
 from one place to the next.
 
-- **Demo presentation:** _coming soon_ <!-- TODO: add demo video / slides link -->
+- **Demo video:** [Watch on Google Drive](https://drive.google.com/file/d/13oTrDcdgn2o4g9OIRktXaShJCubRKhP5/view?usp=sharing)
 - **Live map:** [rivercast-green.vercel.app](https://rivercast-green.vercel.app/)
 
 ![Truth vs Graph WaveNet forecast during a July 2024 storm](figures/forecast_map.png)
