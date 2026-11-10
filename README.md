@@ -1,128 +1,103 @@
 # RiverCast
 
-Physics-aware spatio-temporal graph learning for river pollution forecasting, with uncertainty.
+RiverCast is a small prototype that forecasts river pollution across Norwich a few hours ahead.
+It treats the river network as a graph, so a model can learn how pollution travels downstream
+from one place to the next.
 
-RiverCast asks one question: **does modelling how river locations connect improve short-term,
-multi-pathogen pollution forecasts** compared with the non-graph models used in UK
-bathing-water forecasting today?
+- **Demo presentation:** _coming soon_ <!-- TODO: add demo video / slides link -->
+- **Live map:** _coming soon_ <!-- TODO: add Vercel URL -->
 
-The study area is the Norwich river network (Yare, Wensum, Tud, Tas).
+![Truth vs Graph WaveNet forecast during a July 2024 storm](figures/forecast_map.png)
 
-![Network](figures/network.png)
+## The idea
 
-## Data (Phase 1)
+Bathing-water forecasts in the UK usually treat each site on its own. But rivers are connected:
+a sewer overflow in the city centre reaches sites downstream hours later. RiverCast tests whether
+a graph model that knows this structure forecasts better, especially at places with no sensor.
 
-| Component | Source | Real or simulated |
+## Research it builds on
+
+| Paper | What I used it for |
+|---|---|
+| Forecasting Bathing Water Quality in the UK: A Critical Review (2024) | Rain-driven pollution spikes, hourly forecasts, scoring on spikes |
+| Predicting Norovirus Contamination and Antimicrobial Resistance in Coastal Waters (2026) | Three targets (FIO, norovirus, AMR) that move with the water |
+| Trapping and Bypassing of Suspended Particulate Matter and Faecal Indicator Organisms (2024) | Directed river graph, flow-driven transport, resuspension |
+| Comparative Impact of Sunlight and Salinity on Human Pathogenic Virus Survival (2025) | Decay based on T90, faster in sunlight and warm water |
+| Graph WaveNet for Deep Spatial-Temporal Graph Modeling (Wu et al., 2019) | The main forecasting model |
+| Temporal Fusion Transformers for Multi-horizon Forecasting (Lim et al., 2021) | Forecasting several horizons with quantiles |
+
+## Data
+
+The river network and the weather are real. The pollution is simulated, standing in for the
+hydrodynamic model outputs the full project will use.
+
+| Data | Source | Type |
 |---|---|---|
-| River network (31 reaches, ~2.5 km) | OpenStreetMap waterways | Real |
-| Sewage treatment works | OpenStreetMap `man_made=wastewater_plant` | Real locations, assumed effluent |
-| Urban fraction per node | OpenStreetMap land use | Real |
-| River flow (4 gauges) | Environment Agency Hydrology API | Real |
-| Rainfall (4 gauges) | Environment Agency Hydrology API | Real |
-| Air temperature, solar radiation | Open-Meteo (ERA5) | Real |
-| FIO, norovirus, AMR concentrations | RiverCast simulator | **Simulated** |
+| River network: Yare, Wensum, Tud, Tas, cut into 31 reaches of about 2.5 km | OpenStreetMap | Real |
+| River flow and rainfall, hourly, 2022 to 2024 | Environment Agency gauges | Real |
+| Air temperature and sunlight | Open-Meteo (ERA5) | Real |
+| FIO, norovirus and AMR concentrations | RiverCast simulator | Simulated |
 
-The simulator treats each node as a well-mixed reach and routes pollution downstream:
+**The simulator** moves pollution down the river graph, one reach at a time:
 
-- **Sources:** treated effluent, rain-triggered storm overflows in urban reaches, farm runoff,
-  bed resuspension on rising flow, and upstream inflow whose concentration rises with flow.
-- **Transport:** flow-dependent velocity (`v = a·Q^b`), and flows add at confluences.
-- **Decay:** first-order, temperature-corrected, plus sunlight inactivation (T90-based,
-  cf. Kevill et al. 2025).
-- **Targets:** faecal indicators (hourly sensors), norovirus and AMR (daily grab samples).
-  Norovirus has a winter peak.
-- **Observations:** lognormal error, a detection limit, sensors at only 70% of nodes, and
-  random dropouts.
+- **Sources:** sewer overflows during heavy rain, treatment works, farm runoff, and sediment
+  stirred up when the flow rises.
+- **Transport and decay:** faster flow carries pollution further, flows dilute where rivers meet,
+  and microbes die off faster in sunlight and warm water.
+- **Sensors:** only 70% of reaches are measured. Readings are noisy, norovirus and AMR are daily
+  lab samples, and low values fall below a detection limit.
 
-Pathogen parameters are literature-scale but illustrative. The model is **not** validated
-against real water-quality samples.
+![Storm Babet, October 2023: a pollution wave moves down the Wensum into the Yare](figures/event.png)
 
-![Storm Babet, October 2023](figures/event.png)
+## Models
 
-*Storm Babet (October 2023, real rainfall and flow): storm overflows in central Norwich send a
-FIO wave down the Wensum into the Yare.*
+Every model looks at the last 24 hours and forecasts all three pollutants 1, 3, 6 and 12 hours
+ahead, with a 10%, 50% and 90% quantile to show uncertainty.
 
-![Observations](figures/observations.png)
+- **Persistence:** "the next value equals the last one". A simple baseline.
+- **XGBoost:** gradient-boosted trees on lagged features for each site.
+- **LSTM:** a recurrent network for each site, with no knowledge of the river graph.
+- **Graph WaveNet:** time convolutions plus graph convolutions over the river network, with one
+  shared model for all three pollutants (multi-task learning).
 
-## Usage
+Models learn from the sparse, noisy sensor readings and are scored against the true simulated
+values on unseen data (July to December 2024).
+
+## Experiments and results
+
+| Error (MAE, log10) | Persistence | XGBoost | LSTM | Graph WaveNet |
+|---|---|---|---|---|
+| All reaches | 0.54 | 0.78 | 0.38 | **0.33** |
+| Reaches with a sensor | 0.44 | 0.34 | 0.33 | **0.33** |
+| Reaches without a sensor | 0.78 | 1.86 | 0.50 | **0.35** |
+
+- **Graph vs no graph:** where there is no sensor, Graph WaveNet's error is 31% lower than the LSTM's.
+- **Multi-task vs single-task:** one shared model performs as well as three separate ones
+  (0.332 vs 0.334). Sharing helps norovirus most, the pollutant with the least data.
+- **Storms:** errors roughly double in the most polluted 5% of hours, but Graph WaveNet stays best.
+- **Alerts:** for bacteria above 1,000 CFU/100 mL six hours ahead, 86% of alerts are correct
+  (F1 0.72).
+- **Uncertainty:** the 80% bands contain about 86% of true values for FIO and AMR. Norovirus is
+  forecast too high, because most samples are below the detection limit.
+
+Full tables are in `results/phase3.md`.
+
+## Run it
 
 ```bash
 uv sync
-uv run python scripts/build_dataset.py   # fetch inputs (cached in data/raw) and simulate
-uv run python scripts/plot_dataset.py    # write figures/
+uv run python scripts/build_dataset.py   # download real data and simulate pollution
+uv run python scripts/train.py           # train all models (about 1 hour on a CPU)
+uv run python scripts/evaluate.py        # accuracy tables
+uv run python scripts/experiments.py     # experiments and figures
 uv run pytest
 ```
 
-The output goes to `data/processed/norwich/`:
+## Limitations and next steps
 
-- `dataset.npz` holds `dynamic [T,N,4]`, `static [N,4]`, `target [T,N,3]`,
-  `observed [T,N,3]` (NaN where unobserved) and `adjacency [N,N]`.
-- `nodes.csv`, `meta.json` (features, units, splits) and `rivers.geojson`.
+The pollution data is simulated, so the results show the method works, not that it is accurate
+on real rivers. Next steps: real hydrodynamic outputs and sampling data, a loss that handles
+values below the detection limit, and rainfall forecasts as inputs. See [PLAN.md](PLAN.md).
 
-Load it with `rivercast.dataset.Dataset.load(path)`, and use `ds.split("train" | "val" | "test")`
-for the chronological splits (2022–23 / 2024 H1 / 2024 H2).
-
-## Layout
-
-```
-configs/norwich.yaml       study area, gauges, simulator and pathogen parameters
-src/rivercast/
-  fetch/                   OSM, Environment Agency and Open-Meteo clients (cached)
-  network.py               OSM ways -> directed reach graph
-  features.py              static node features, per-node flow and rain
-  pathogens.py             pathogen parameters and decay
-  sources.py               pollution loads
-  transport.py             downstream routing with decay
-  observe.py               noisy, sparse measurements
-  dataset.py               Dataset container (save/load/splits)
-  pipeline.py              end-to-end build
-  forecast_data.py         windows, scaling and targets for forecasting
-  models/                  persistence, XGBoost, LSTM, Graph WaveNet
-  training.py              masked quantile loss and training loop
-  evaluate.py              log10 error and interval coverage
-  plots.py
-scripts/                   CLI entry points
-tests/
-```
-
-## Forecasting (Phase 2)
-
-Each model sees the last 24 h at every node and forecasts all three targets 1, 3, 6 and 12 h
-ahead as 10/50/90% quantiles. It trains on noisy, sparse observations (masked pinball loss) and
-is scored on the true simulated concentration for July–December 2024.
-
-| MAE (log10) | Persistence | XGBoost | LSTM | Graph WaveNet |
-|---|---|---|---|---|
-| All nodes | 0.541 | 0.783 | 0.377 | **0.332** |
-| Nodes with a sensor | 0.444 | 0.341 | 0.328 | **0.326** |
-| Nodes without a sensor | 0.778 | 1.864 | 0.499 | **0.346** |
-| 80% interval coverage | – | 0.54 | 0.64 | 0.67 |
-
-The river graph adds little where a sensor already exists, but cuts error by about a third
-where none does. The intervals are too narrow, and calibrating them is next. See
-`results/metrics.md` for each target and horizon.
-
-```bash
-uv run python scripts/train.py            # all models (~1 h on CPU); add --fast for a smoke test
-uv run python scripts/evaluate.py         # writes results/metrics.{csv,md}
-```
-
-## Experiments (Phase 3)
-
-`uv run python scripts/experiments.py` writes `results/phase3.md` and the figures below.
-
-- **Graph vs no graph:** at nodes without a sensor, Graph WaveNet's error is 31% lower than the LSTM's.
-- **Multi-task vs single-task:** a tie overall (0.332 vs 0.334). Sharing helps norovirus, the
-  sparsest target (0.572 vs 0.592), and costs a little on hourly FIO (0.258 vs 0.244).
-- **Storms:** error roughly doubles in the top 5% of hours; Graph WaveNet is still best (0.69).
-- **Alerts:** FIO > 1000 CFU/100 mL, 6 h ahead: precision 0.86, recall 0.62, F1 0.72.
-- **Uncertainty:** 80% bands cover ~86% of truth for FIO/AMR; conformal calibration barely moves
-  them. Norovirus is biased high because 74% of samples are below the detection limit.
-
-![Error by node group](figures/node_groups.png)
-![Storm forecast](figures/forecast_event.png)
-
-See [PLAN.md](PLAN.md) for the plan and future work.
-
-Data: © OpenStreetMap contributors (ODbL); Environment Agency data under the Open Government
-Licence v3.0; Open-Meteo (CC BY 4.0).
+Data: OpenStreetMap contributors (ODbL), Environment Agency (Open Government Licence v3.0),
+Open-Meteo (CC BY 4.0).
