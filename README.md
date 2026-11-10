@@ -19,10 +19,10 @@ a graph model that knows this structure forecasts better, especially at places w
 
 | Paper | What I used it for |
 |---|---|
-| Forecasting Bathing Water Quality in the UK: A Critical Review (2024) | Rain-driven pollution spikes, hourly forecasts, scoring on spikes |
-| Predicting Norovirus Contamination and Antimicrobial Resistance in Coastal Waters (2026) | Three targets (FIO, norovirus, AMR) that move with the water |
-| Trapping and Bypassing of Suspended Particulate Matter and Faecal Indicator Organisms (2024) | Directed river graph, flow-driven transport, resuspension |
-| Comparative Impact of Sunlight and Salinity on Human Pathogenic Virus Survival (2025) | Decay based on T90, faster in sunlight and warm water |
+| Forecasting Bathing Water Quality in the UK: A Critical Review (Krupska et al., 2024) | Rain-driven pollution spikes, hourly forecasts, scoring on spikes |
+| Predicting Norovirus Contamination and Antimicrobial Resistance in Coastal Waters (Clough et al., 2026) | Three targets (FIO, norovirus, AMR) that move with the water |
+| Trapping and Bypassing of Suspended Particulate Matter and Faecal Indicator Organisms (Jago et al., 2024) | Directed river graph, flow-driven transport, resuspension |
+| Comparative Impact of Sunlight and Salinity on Human Pathogenic Virus Survival (Kevill et al., 2025) | Decay based on T90, faster in sunlight and warm water |
 | Graph WaveNet for Deep Spatial-Temporal Graph Modeling (Wu et al., 2019) | The main forecasting model |
 | Temporal Fusion Transformers for Multi-horizon Forecasting (Lim et al., 2021) | Forecasting several horizons with quantiles |
 
