@@ -46,7 +46,7 @@ def main() -> None:
     parser.add_argument("--horizon", type=int, default=6, help="horizon (h) for alerts/figures")
     parser.add_argument("--node", default="WEN06", help="node for the forecast figure")
     parser.add_argument("--figures", default="figures")
-    parser.add_argument("--export", default="docs/forecast_data.json")
+    parser.add_argument("--export", default="web/forecast_data.json")
     args = parser.parse_args()
 
     cfg, data = load_setup(args.config)
